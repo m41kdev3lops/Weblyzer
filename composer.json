@@ -1,0 +1,17 @@
+{
+    "name": "maikdevelops/Weblyzer",
+    "description": "Package Description.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Yousrie",
+            "email": "maikdevelops@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Weblyzer\\": "src/"
+        }
+    }
+}
