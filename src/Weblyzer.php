@@ -12,8 +12,7 @@ class Weblyzer
     protected $url;
     protected $method;
     protected $html;
-    protected $result;
-    protected $elements = [];
+    protected $dom;
 
     protected $availableRules = [
         "class", "id"
@@ -23,6 +22,7 @@ class Weblyzer
     public function __construct()
     {
         $this->curler = new Curler;
+        $this->dom = new \DOMDocument;
     }
 
 
@@ -40,8 +40,15 @@ class Weblyzer
     public function setHtml( string $html )
     {
         $this->html = $html;
+        @$this->dom->loadHtml(  $html );
 
         return $this;
+    }
+
+
+    public function getHtml()
+    {
+        return $this->html;
     }
 
 
@@ -64,19 +71,9 @@ class Weblyzer
     }
 
 
-    public function findAll( string $element )
+    public function getAll( string $element )
     {
-        $string_of_elements = $this->getAll( $element );
-
-        $this->setHtml( $string_of_elements );
-
-        // 
-    }
-
-
-    public function getHtml()
-    {
-        return $this->html;
+        return $this->dom->getElementsByTagName( $element );
     }
 
 
@@ -101,18 +98,6 @@ class Weblyzer
         preg_match( $pattern, $this->html, $matches );
         
         if ( empty( $matches ) ) return [];
-
-        return $matches[0];
-    }
-
-
-    private function getAll( string $element )
-    {
-        $pattern = "/(<\s*{$element}\s*>.*<\s*\/{$element}\s*>)/";
-
-        preg_match( $pattern, $this->html, $matches );
-
-        if ( empty( $matches ) ) throw new \Exception( "No {$element}(s) found!" );
 
         return $matches[0];
     }
