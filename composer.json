@@ -13,5 +13,8 @@
         "psr-4": {
             "Weblyzer\\": "src/"
         }
+    },
+    "require": {
+        "maikdevelops/curler": "^1.2"
     }
 }
