@@ -1,0 +1,51 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "c873845a4535b7a3b6cfdf678b1f8d62",
+    "packages": [
+        {
+            "name": "maikdevelops/curler",
+            "version": "1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/m41kdev3lops/Curler.git",
+                "reference": "4ca7af69aa2420b13268985c004539442d21127e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/m41kdev3lops/Curler/zipball/4ca7af69aa2420b13268985c004539442d21127e",
+                "reference": "4ca7af69aa2420b13268985c004539442d21127e",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Curler\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Yousrie",
+                    "email": "maikdevelops@gmail.com"
+                }
+            ],
+            "description": "cURL requests made easy.",
+            "time": "2018-09-27T15:41:21+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

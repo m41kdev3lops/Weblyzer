@@ -1,48 +1,44 @@
 <?php
 namespace Weblyzer;
 
-use Curler\Curler;
+use Weblyzer\WeblyzerElement as Element;
 
-/**
- * Weblyzer main class.
- */
+
 class Weblyzer
 {
-    protected $curler;
-    protected $url;
-    protected $method;
     protected $html;
-    protected $dom;
-
-    protected $availableRules = [
-        "class", "id"
-    ];
+    protected $elements = [];
 
 
-    public function __construct()
+    public function __construct( string $html = '' )
     {
-        $this->curler = new Curler;
-        $this->dom = new \DOMDocument;
-    }
-
-
-    public function setUrl( string $url, string $method = 'get' )
-    {
-        $this->url = $url;
-        $this->method = $method;
-
-        $this->setHtml( $this->curler->{$method}( $url ) );
-
-        return $this;
+        $this->setHtml( $html );
     }
 
 
     public function setHtml( string $html )
     {
         $this->html = $html;
-        @$this->dom->loadHtml(  $html );
 
         return $this;
+    }
+
+
+    private function setElements( array $elements )
+    {
+        $this->elements = [];
+
+        foreach ( $elements as $element ) {
+            $this->elements[] = new Element( $element );
+        }
+
+        return $this;
+    }
+
+
+    public function getElements()
+    {
+        return $this->elements;
     }
 
 
@@ -52,53 +48,70 @@ class Weblyzer
     }
 
 
-    public function find( string $element, array $rules = [] )
+    public function findByClass( string $element, array $classNames )
     {
-        foreach( $rules as $rule => $value ) if ( ! in_array( $rule, $this->availableRules ) ) throw new \Exception("The rule => {$rule} => isn't allowed.");
+        $rules = implode(" ", $classNames);
 
-        $rules = [
-            "element"   => $element,
-            "rules"     => $rules
-        ];
-        
-        $html = $this->getByRules( $rules );
-        
-        if ( empty( $html ) || ! $html ) throw new \Exception("We couldn't find any {$element}s with the rules you gave");
+        $pattern = "/<\s*{$element}\s+(?:(?!class).)*class\s*=\s*[\"']\s*{$rules}\s*[\"'][^>]*>(.*?)<\s*\/\s*{$element}\s*>/s";
+
+        return $this->matchOrDie( $element, $pattern );
+    }
+
+
+    public function findByTag( string $element )
+    {
+        $pattern = "/<\s*{$element}[^>]*>(.*?)<\s*\/\s*{$element}\s*>/s";
+
+        return $this->matchOrDie( $element, $pattern );
+    }
+
+
+    public function findById( string $element, string $id )
+    {
+        $pattern = "/<\s*{$element}\s+(?:(?!id).)*id\s*=\s*[\"']\s*{$id}\s*[\"'][^>]*>(.*?)<\s*\/\s*{$element}\s*>/s";
+
+        return $this->matchOrDie( $element, $pattern );
+    }
+
+
+    public function findByAttribute( string $element, string $attribute, $value )
+    {
+        if ( is_array( $value ) ) $value = implode(" ", $value);
+
+        $value = $this->sanitize( $value );
+
+        $pattern = "/<\s*{$element}\s+(?:(?!{$attribute}).)*{$attribute}\s*=\s*[\"']\s*{$value}\s*[\"'][^>]*>(.*?)<\s*\/\s*{$element}\s*>/s";
+
+        return $this->matchOrDie( $element, $pattern );
+    }
+
+    
+    private function sanitize( string $value )
+    {
+        return str_replace("/", "\\/", $value);
+    }
+
+
+    private function matchOrDie( string $element, string $pattern )
+    {
+        preg_match_all( $pattern, $this->html, $matches );
+
+        if ( ! array_key_exists( 1, $matches ) || empty( $matches[1] ) ) throw new \Exception( "Tag {$element} was not found!!" );
+
+        $html = '';
+
+        if ( is_array( $matches[1] ) ) {
+            $this->setElements( $matches[1] );
+
+            foreach( $matches[1] as $match ) {
+                $html .= $match;
+            }
+        } else {
+            $html = $matches[1];
+        }
 
         $this->setHtml( $html );
 
         return $this;
-    }
-
-
-    public function getAll( string $element )
-    {
-        return $this->dom->getElementsByTagName( $element );
-    }
-
-
-    private function getByRules( array $rules )
-    {
-        if ( ! array_key_exists( 'element', $rules ) || ! array_key_exists( 'rules', $rules ) ) throw new \Exception( "element OR rules key doesn't exist in the rules you gave me!" );
-
-        $element = $rules['element'];
-        $rules = $rules['rules'];
-        $given_rules = [];
-        $rule = '';
-
-        if ( ! empty( $rules ) ) {
-            foreach( $rules as $rule => $value ) $given_rules[] = "{$rule}\\s*=\\s*['\"]\\s*{$value}\\s*['\"]";
-    
-            if ( ! empty( $given_rules ) ) $rule = "\\s*" . implode("\\s+\\w*", $given_rules);
-        }
-
-        $pattern = "/(<\s*{$element}{$rule}\s*>.*?<\s*\/{$element}\s*>)/";
-
-
-        preg_match( $pattern, $this->html, $matches );
-        
-        if ( empty( $matches ) ) return [];
-
-        return $matches[0];
     }
 }
