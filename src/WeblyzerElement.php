@@ -21,15 +21,21 @@ class WeblyzerElement
     }
 
 
+    public function getHtml()
+    {
+        return $this->html;
+    }
+
+
     public function getText()
     {
-        $pattern = "/<\s*\w+\s*[^>]*>(.*?)<\/\s*\w+\s*>/";
+        $pattern = "/<\s*(\w+)[^>]*>(.*?)<\/\s*\\1\s*>/";
 
         preg_match( $pattern, $this->html, $matches );
 
-        if ( ! array_key_exists( 1, $matches ) || empty( $matches[1] ) ) throw new \Exception( "Unable to retrieve text" );
+        if ( ! array_key_exists( 2, $matches ) || empty( $matches[2] ) ) throw new \Exception( "Unable to retrieve text" );
 
-        return $matches[1];
+        return $matches[2];
     }
 
 
