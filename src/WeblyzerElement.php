@@ -35,12 +35,12 @@ class WeblyzerElement
 
     public function getAttribute( string $attribute )
     {
-        $pattern = "/<\s*\b\s*[^>]*\s*{$attribute}\s*=['|\"](\s*[^>]*)['|\"]>(.*?)<\/\s*\w+\s*>/";
+        $pattern = "/<\s*\b\s*[^>]*\s*{$attribute}\s*=(['|\"])(\s*[^>]*?)\\1\s*[^>]*?\s*>.*?<\/\s*\w+\s*>/";
 
         preg_match( $pattern, $this->html, $matches );
 
-        if ( ! array_key_exists( 1, $matches ) || empty( $matches[1] ) ) throw new \Exception( "Failed to get attribute => {$attribute}" );
+        if ( ! array_key_exists( 2, $matches ) || empty( $matches[2] ) ) throw new \Exception( "Failed to get attribute => {$attribute}" );
 
-        return $matches[1];
+        return $matches[2];
     }
 }
