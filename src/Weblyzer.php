@@ -42,6 +42,14 @@ class Weblyzer
     }
 
 
+    public function getElement()
+    {
+        if ( ! array_key_exists( 0, $this->elements ) ) throw new \Exception( "Element was not found!" );
+
+        return $this->elements[0];
+    }
+
+
     public function getHtml()
     {
         return $this->html;
