@@ -41,7 +41,7 @@ class WeblyzerElement
 
     public function getAttribute( string $attribute )
     {
-        $pattern = "/<\s*\b\s*[^>]*\s*{$attribute}\s*=(['|\"])(\s*[^>]*?)\\1\s*[^>]*?\s*>.*?<\/\s*\w+\s*>/";
+        $pattern = "/{$attribute}\s*=(['|\"])([^>]*?)\\1/i";
 
         preg_match( $pattern, $this->html, $matches );
 
