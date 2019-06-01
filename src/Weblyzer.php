@@ -74,6 +74,14 @@ class Weblyzer
     }
 
 
+    public function findByNonClosingTag( string $element )
+    {
+        $pattern = "/<\s*{$element}\s*([^>]*)\/?\s*>/s";
+
+        return $this->matchOrDie( $element, $pattern );
+    }
+
+
     public function findById( string $element, string $id )
     {
         $pattern = "/<\s*{$element}\s+(?:(?!id).)*id\s*=\s*[\"']\s*{$id}\s*[\"'][^>]*>(.*?)<\s*\/\s*{$element}\s*>/s";
