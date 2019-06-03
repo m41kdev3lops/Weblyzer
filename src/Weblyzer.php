@@ -111,10 +111,25 @@ class Weblyzer
         return $this->matchOrDie( $tag, $pattern );
     }
 
+
+    public function findByTagBefore( string $tag, string $before )
+    {
+        $before = $this->sanitize( $before );
+
+        $pattern = "/(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>).*?{$before}/s";
+
+        return $this->matchOrDie( $tag, $pattern );
+    }
+
     
     private function sanitize( string $value )
     {
         $value = str_replace("/", "\\/", $value);
+        $value = str_replace("\"", "\\\"", $value);
+        $value = str_replace(".", "\\.", $value);
+        $value = str_replace("?", "\\?", $value);
+        $value = str_replace("(", "\\(", $value);
+        $value = str_replace(")", "\\)", $value);
 
         return $value;
     }
