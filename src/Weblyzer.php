@@ -60,7 +60,7 @@ class Weblyzer
     {
         $rules = implode(" ", $classNames);
 
-        $pattern = "/<\s*{$element}\s+(?:(?!class).)*class\s*=\s*[\"']\s*{$rules}\s*[\"'][^>]*>(.*?)<\s*\/\s*{$element}\s*>/s";
+        $pattern = "/(<\s*{$element}\s+(?:(?!class).)*class\s*=\s*[\"']\s*{$rules}\s*[\"'][^>]*>.*?<\s*\/\s*{$element}\s*>)/s";
 
         return $this->matchOrDie( $element, $pattern );
     }
@@ -68,7 +68,7 @@ class Weblyzer
 
     public function findByTag( string $element )
     {
-        $pattern = "/<\s*{$element}[^>]*>(.*?)<\s*\/\s*{$element}\s*>/s";
+        $pattern = "/(<\s*{$element}\s*[^>]*?>.*?<\s*\/\s*{$element}\s*>)/s";
 
         return $this->matchOrDie( $element, $pattern );
     }
@@ -76,7 +76,7 @@ class Weblyzer
 
     public function findByNonClosingTag( string $element )
     {
-        $pattern = "/<\s*{$element}\s*([^>]*)\/?\s*>/s";
+        $pattern = "/(<\s*{$element}\s*[^>]*\/?\s*>)/s";
 
         return $this->matchOrDie( $element, $pattern );
     }
@@ -84,7 +84,7 @@ class Weblyzer
 
     public function findById( string $element, string $id )
     {
-        $pattern = "/<\s*{$element}\s+(?:(?!id).)*id\s*=\s*[\"']\s*{$id}\s*[\"'][^>]*>(.*?)<\s*\/\s*{$element}\s*>/s";
+        $pattern = "/(<\s*{$element}\s+(?:(?!id).)*id\s*=\s*[\"']\s*{$id}\s*[\"'][^>]*>.*?<\s*\/\s*{$element}\s*>)/s";
 
         return $this->matchOrDie( $element, $pattern );
     }
@@ -96,34 +96,46 @@ class Weblyzer
 
         $value = $this->sanitize( $value );
 
-        $pattern = "/<\s*{$element}\s+(?:(?!{$attribute}).)*{$attribute}\s*=\s*[\"']\s*{$value}\s*[\"'][^>]*>(.*?)<\s*\/\s*{$element}\s*>/s";
+        $pattern = "/(<\s*{$element}\s+(?:(?!{$attribute}).)*{$attribute}\s*=\s*[\"']\s*{$value}\s*[\"'][^>]*>.*?<\s*\/\s*{$element}\s*>)/s";
 
         return $this->matchOrDie( $element, $pattern );
+    }
+
+
+    public function findByTagAfter( string $tag, string $after )
+    {
+        $after = $this->sanitize( $after );
+
+        $pattern = "/{$after}[^<]*?(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>)/s";
+
+        return $this->matchOrDie( $tag, $pattern );
     }
 
     
     private function sanitize( string $value )
     {
-        return str_replace("/", "\\/", $value);
+        $value = str_replace("/", "\\/", $value);
+
+        return $value;
     }
 
 
-    private function matchOrDie( string $element, string $pattern )
+    private function matchOrDie( string $element, string $pattern, int $index = 1 )
     {
         preg_match_all( $pattern, $this->html, $matches );
 
-        if ( ! array_key_exists( 1, $matches ) || empty( $matches[1] ) ) throw new \Exception( "Tag {$element} was not found!!" );
+        if ( ! array_key_exists( $index, $matches ) || empty( $matches[$index] ) ) throw new \Exception( "Tag {$element} was not found!!" );
 
         $html = '';
 
-        if ( is_array( $matches[1] ) ) {
-            $this->setElements( $matches[1] );
+        if ( is_array( $matches[$index] ) ) {
+            $this->setElements( $matches[$index] );
 
-            foreach( $matches[1] as $match ) {
+            foreach( $matches[$index] as $match ) {
                 $html .= $match;
             }
         } else {
-            $html = $matches[1];
+            $html = $matches[$index];
         }
 
         $this->setHtml( $html );
