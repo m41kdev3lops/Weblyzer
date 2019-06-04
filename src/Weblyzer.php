@@ -112,6 +112,30 @@ class Weblyzer
     }
 
 
+    public function findByTagAfterRegex( string $tag, string $regex )
+    {
+        if ( preg_match( $regex, null ) === false ) throw new \Exception( "{$regex} is not a valid Regular Expression!" );
+
+        preg_match( "/^(.)([^\\1]*?)\\1(.*?)$/", $regex, $matches );
+
+        $delimeter = $matches[1];
+        $regex = $matches[2];
+        $flags = $matches[3];
+
+        $final_flags = 's';
+
+        if ( ! empty( $flags ) ) {
+            $exploded_flags = str_split( $flags );
+    
+            foreach( $exploded_flags as $flag ) if ( strpos( $final_flags,  $flag ) === false ) $final_flags .= $flag;
+        }
+
+        $pattern = "/{$regex}[^<]*?(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>)/{$final_flags}";
+
+        return $this->matchOrDie( $tag, $pattern );
+    }
+
+
     public function findByTagBefore( string $tag, string $before )
     {
         $before = $this->sanitize( $before );
