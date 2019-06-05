@@ -2,7 +2,10 @@
 namespace Weblyzer;
 
 use Weblyzer\WeblyzerElement as Element;
-
+use Weblyzer\Validators\Regex;
+use Weblyzer\Helpers\Sanitizer;
+use Weblyzer\Helpers\Logger;
+use Weblyzer\Helpers\Finder;
 
 class Weblyzer
 {
@@ -24,7 +27,7 @@ class Weblyzer
     }
 
 
-    private function setElements( array $elements )
+    public function setElements( array $elements )
     {
         $this->elements = [];
 
@@ -62,7 +65,7 @@ class Weblyzer
 
         $pattern = "/(<\s*{$element}\s+(?:(?!class).)*class\s*=\s*[\"']\s*{$rules}\s*[\"'][^>]*>.*?<\s*\/\s*{$element}\s*>)/s";
 
-        return $this->matchOrDie( $element, $pattern );
+        return Finder::find( $this, $pattern );
     }
 
 
@@ -70,7 +73,7 @@ class Weblyzer
     {
         $pattern = "/(<\s*{$element}\s*[^>]*?>.*?<\s*\/\s*{$element}\s*>)/s";
 
-        return $this->matchOrDie( $element, $pattern );
+        return Finder::find( $this, $pattern );
     }
 
 
@@ -78,7 +81,7 @@ class Weblyzer
     {
         $pattern = "/(<\s*{$element}\s*[^>]*\/?\s*>)/s";
 
-        return $this->matchOrDie( $element, $pattern );
+        return Finder::find( $this, $pattern );
     }
 
 
@@ -86,7 +89,7 @@ class Weblyzer
     {
         $pattern = "/(<\s*{$element}\s+(?:(?!id).)*id\s*=\s*[\"']\s*{$id}\s*[\"'][^>]*>.*?<\s*\/\s*{$element}\s*>)/s";
 
-        return $this->matchOrDie( $element, $pattern );
+        return Finder::find( $this, $pattern );
     }
 
 
@@ -94,27 +97,27 @@ class Weblyzer
     {
         if ( is_array( $value ) ) $value = implode(" ", $value);
 
-        $value = $this->sanitize( $value );
+        $value = Sanitizer::sanitize( $value );
 
         $pattern = "/(<\s*{$element}\s+(?:(?!{$attribute}).)*{$attribute}\s*=\s*[\"']\s*{$value}\s*[\"'][^>]*>.*?<\s*\/\s*{$element}\s*>)/s";
 
-        return $this->matchOrDie( $element, $pattern );
+        return Finder::find( $this, $pattern );
     }
 
 
     public function findByTagAfter( string $tag, string $after )
     {
-        $after = $this->sanitize( $after );
+        $after = Sanitizer::sanitize( $after );
 
         $pattern = "/{$after}[^<]*?(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>)/s";
 
-        return $this->matchOrDie( $tag, $pattern );
+        return Finder::find( $this, $after );
     }
 
 
     public function findByTagAfterRegex( string $tag, string $regex )
     {
-        if ( preg_match( $regex, null ) === false ) throw new \Exception( "{$regex} is not a valid Regular Expression!" );
+        Regex::validate( $regex );
 
         preg_match( "/^(.)([^\\1]*?)\\1(.*?)$/", $regex, $matches );
 
@@ -127,58 +130,23 @@ class Weblyzer
         if ( ! empty( $flags ) ) {
             $exploded_flags = str_split( $flags );
     
-            foreach( $exploded_flags as $flag ) if ( strpos( $final_flags,  $flag ) === false ) $final_flags .= $flag;
+            foreach( $exploded_flags as $flag ) 
+                if ( strpos( $final_flags,  $flag ) === false ) 
+                    $final_flags .= $flag;
         }
 
         $pattern = "/{$regex}[^<]*?(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>)/{$final_flags}";
 
-        return $this->matchOrDie( $tag, $pattern );
+        return Finder::find( $this, $pattern );
     }
 
 
     public function findByTagBefore( string $tag, string $before )
     {
-        $before = $this->sanitize( $before );
+        $before = Sanitizer::sanitize( $before );
 
         $pattern = "/(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>).*?{$before}/s";
 
-        return $this->matchOrDie( $tag, $pattern );
-    }
-
-    
-    private function sanitize( string $value )
-    {
-        $value = str_replace("/", "\\/", $value);
-        $value = str_replace("\"", "\\\"", $value);
-        $value = str_replace(".", "\\.", $value);
-        $value = str_replace("?", "\\?", $value);
-        $value = str_replace("(", "\\(", $value);
-        $value = str_replace(")", "\\)", $value);
-
-        return $value;
-    }
-
-
-    private function matchOrDie( string $element, string $pattern, int $index = 1 )
-    {
-        preg_match_all( $pattern, $this->html, $matches );
-
-        if ( ! array_key_exists( $index, $matches ) || empty( $matches[$index] ) ) throw new \Exception( "Tag {$element} was not found!!" );
-
-        $html = '';
-
-        if ( is_array( $matches[$index] ) ) {
-            $this->setElements( $matches[$index] );
-
-            foreach( $matches[$index] as $match ) {
-                $html .= $match;
-            }
-        } else {
-            $html = $matches[$index];
-        }
-
-        $this->setHtml( $html );
-
-        return $this;
+        return Finder::find( $this, $pattern );
     }
 }
