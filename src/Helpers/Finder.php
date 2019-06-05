@@ -2,6 +2,7 @@
 
 namespace Weblyzer\Helpers;
 
+use Exception;
 use Weblyzer\Weblyzer;
 use Weblyzer\Validators\Regex;
 
@@ -13,10 +14,8 @@ class Finder
 
         preg_match_all( $pattern, $weblyzer->getHtml(), $matches );
 
-        if ( ! array_key_exists( $index, $matches ) || empty( $matches[$index] ) ) {
-            Logger::log( "The pattern {$pattern} did NOT match anything => \n\n HTML => \n{$weblyzer->getHtml()} \n\n Regex =. $pattern \n\n========================\n\n" );
-            throw new \Exception( "The pattern {$pattern} did NOT match anything" );
-        }
+        if ( ! array_key_exists( $index, $matches ) || empty( $matches[$index] ) )
+            throw new Exception( "The pattern {$pattern} did NOT match anything" );
 
         $html = '';
 

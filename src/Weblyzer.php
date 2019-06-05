@@ -147,4 +147,10 @@ class Weblyzer
 
         return Finder::find( $this, $pattern );
     }
+
+
+    public function findByRegex( string $regex, int $index = 1 )
+    {
+        return Finder::find( $this, $regex, $index );
+    }
 }
