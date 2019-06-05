@@ -2,10 +2,10 @@
 namespace Weblyzer;
 
 use Weblyzer\WeblyzerElement as Element;
-use Weblyzer\Validators\Regex;
+use Weblyzer\Validators\Regex as RegexValidator;
 use Weblyzer\Helpers\Sanitizer;
-use Weblyzer\Helpers\Logger;
 use Weblyzer\Helpers\Finder;
+use Weblyzer\Helpers\Regex;
 
 class Weblyzer
 {
@@ -111,31 +111,17 @@ class Weblyzer
 
         $pattern = "/{$after}[^<]*?(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>)/s";
 
-        return Finder::find( $this, $after );
+        return Finder::find( $this, $pattern );
     }
 
 
     public function findByTagAfterRegex( string $tag, string $regex )
     {
-        Regex::validate( $regex );
+        RegexValidator::validate( $regex );
 
-        preg_match( "/^(.)([^\\1]*?)\\1(.*?)$/", $regex, $matches );
+        $regex = Regex::extract( $regex );
 
-        $delimeter = $matches[1];
-        $regex = $matches[2];
-        $flags = $matches[3];
-
-        $final_flags = 's';
-
-        if ( ! empty( $flags ) ) {
-            $exploded_flags = str_split( $flags );
-    
-            foreach( $exploded_flags as $flag ) 
-                if ( strpos( $final_flags,  $flag ) === false ) 
-                    $final_flags .= $flag;
-        }
-
-        $pattern = "/{$regex}[^<]*?(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>)/{$final_flags}";
+        $pattern = "/{$regex['regex']}[^<]*?(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>)/{$regex['final_flags']}";
 
         return Finder::find( $this, $pattern );
     }
@@ -146,6 +132,18 @@ class Weblyzer
         $before = Sanitizer::sanitize( $before );
 
         $pattern = "/(<\s*{$tag}.*?<\s*\/{$tag}[^>]*?>).*?{$before}/s";
+
+        return Finder::find( $this, $pattern );
+    }
+
+
+    public function findAfterRegex( string $regex )
+    {
+        RegexValidator::validate( $regex );
+
+        $regex = Regex::extract( $regex );
+
+        $pattern = "/{$regex['regex']}(.*)/{$regex['final_flags']}";
 
         return Finder::find( $this, $pattern );
     }
